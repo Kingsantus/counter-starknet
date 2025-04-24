@@ -19,8 +19,7 @@ pub mod Counter {
     #[derive(Drop, starknet::Event)]
     pub enum Event {
         Increased: Increased,
-        Decreased: Decreased,
-        ResetCount: ResetCount
+        Decreased: Decreased
     }
 
     #[derive(Drop, starknet::Event)]
@@ -33,10 +32,6 @@ pub mod Counter {
         account: ContractAddress,
     }
 
-    #[derive(Drop, starknet::Event)]
-    pub struct ResetCount {
-        result: felt252,
-    }
 
     pub mod Error {
         pub const EMPTY_COUNTER: felt252 = 'VALUE IS ZERO';
@@ -63,7 +58,6 @@ pub mod Counter {
 
         fn reset_counter(ref self: ContractState) {
             self.counter.write(0);
-            self.emit(Event::ResetCount( ResetCount { result: 'Number added' }))
         }
     }
 
