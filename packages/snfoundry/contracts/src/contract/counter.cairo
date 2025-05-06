@@ -38,12 +38,12 @@ pub mod Counter {
 
     #[derive(Drop, starknet::Event)]
     pub struct Increased {
-        account: ContractAddress,
+        pub account: ContractAddress,
     }
 
     #[derive(Drop, starknet::Event)]
     pub struct Decreased {
-        account: ContractAddress,
+        pub account: ContractAddress,
     }
 
 

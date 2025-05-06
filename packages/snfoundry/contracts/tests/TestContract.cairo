@@ -34,7 +34,6 @@ fn __deploy__(init_value: u32) -> ( ICounterDispatcher, IOwnableDispatcher, ICou
     (counter, ownable, safe_dispatcher)
 }
 
-#[ignore]
 #[test]
 fn test_counter_deployment() {
     let ( counter, ownable, _ ) = __deploy__(ZERO_COUNT);
@@ -44,7 +43,6 @@ fn test_counter_deployment() {
     assert(ownable.owner() == OWNER(), 'owner not set');
 }
 
-#[ignore]
 #[test]
 fn test_increase_counter() {
     let ( counter, _, _ ) = __deploy__(ZERO_COUNT);
@@ -60,7 +58,6 @@ fn test_increase_counter() {
     assert(count_2 != count_1 + 5, 'invalid count');
 }
 
-#[ignore]
 #[test]
 fn test_emitted_increased_event() {
     let ( counter, _, _ ) = __deploy__(ZERO_COUNT);
