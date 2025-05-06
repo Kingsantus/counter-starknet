@@ -18,7 +18,7 @@ fn USER_1() -> ContractAddress {
 }
 
 // util deploy function
-fn __deploy__(init_value: u32) -> ( ICounterDispatcher, IOwnableDispatcher ) {
+fn __deploy__(init_value: u32) -> ( ICounterDispatcher, IOwnableDispatcher, ICounterSafeDispatcher ) {
     // declare
     let contract_class = declare("Counter").unwrap().contract_class();
     // serialize constructor
@@ -85,7 +85,7 @@ fn test_emitted_increased_event() {
     );
 
     spy.assert_emitted(
-        @assert![
+        @array![
             (
                 counter.contract_address,
                 Counter::Event::Decreased(
@@ -112,13 +112,54 @@ fn test_safe_panic_decrease_counter() {
 }
 
 #[test]
-#[should(expected: 'VALUE IS ZERO')]
+#[should_panic(expected: 'VALUE IS ZERO')]
 fn test_panic_decrease_counter() {
+    let (counter, _, _) = __deploy__(ZERO_COUNT);
+
+    assert(counter.get_counter() == ZERO_COUNT, 'invalid count');
+    counter.decrease_counter();
+}
+
+#[test]
+fn test_successful_decrease_counter() {
+    let (counter, _, _) = __deploy__(5);
+    assert(counter.get_counter() == 5, 'invalid count');
+    // decrease counter
+    counter.decrease_counter();
+    let final_count = counter.get_counter();
+    assert(final_count == 4, 'invalid count');
+}
+
+#[test]
+fn test_successful_reset_counter() {
+    let (counter, _, _) = __deploy__(5);
+
+    let count_1 = counter.get_counter();
+
+    assert(count_1 == 5, 'invalid count');
+
+    start_cheat_caller_address(counter.contract_address, OWNER());
+    // reset counter
+    counter.reset_counter();
+
+    stop_cheat_caller_address(counter.contract_address);
+
+    let final_count = counter.get_counter();
+    assert(final_count == 0, 'invalid reset count');
+
+}
+
+#[test]
+#[feature("safe_dispatcher")]
+fn test_safe_panic_reset_counter_non_owner() {
     let (counter, _, safe_dispatcher) = __deploy__(ZERO_COUNT);
 
     assert(counter.get_counter() == ZERO_COUNT, 'invalid count');
-    match safe_dispatcher.decrease_counter() {
-        Result::Ok(_) => panic!("cannot decrease 0"),
-        Result::Err(e) => assert(*e[0] == 'VALUE IS ZERO', *e.at(0))
+
+    start_cheat_caller_address(counter.contract_address, USER_1());
+
+    match safe_dispatcher.reset_counter() {
+        Result::Ok(_) => panic!("cannot reset"),
+        Result::Err(e) => assert(*e[0] == 'Caller is not the owner', *e.at(0)),
     }
 }
